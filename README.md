@@ -91,3 +91,46 @@ Once the server is running, you can access the interactive API documentation at:
 ### 2. Trigger Training (Pipeline)
 - **Endpoint:** `POST /api/v1/train`
 - **Description:** Triggers the recommendation training pipeline as a background task. It reads recent interaction events from the events database, calculates new user embeddings (using the mean vector of interacted products), and upserts them into the PostgreSQL user embeddings table.
+
+---
+
+## Optional: Deploying as a Docker Image
+
+If you prefer to run the application in a containerized environment, you can build and run a Docker image.
+
+### 1. Create a `Dockerfile`
+
+If you haven't already, create a file named `Dockerfile` in the root directory of the project:
+
+```dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### 2. Build the Docker Image
+
+Run the following command in the same directory as your `Dockerfile`:
+
+```bash
+docker build -t hybrid-recommendation-system .
+```
+
+### 3. Run the Docker Container
+
+Make sure your database connection strings in `constants.py` are pointing to addresses accessible from inside the Docker container (e.g., using your machine's IP address or `host.docker.internal` instead of `127.0.0.1` or `localhost`).
+
+```bash
+docker run -d -p desired_unique_port:8000 hybrid-recommendation-system
+```
+
+The application will be accessible at `http://localhost:desired_unique_port`.
